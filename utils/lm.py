@@ -14,40 +14,50 @@ NOTE:
         - call_vllm_api: using vllm self-served models
         - openai_generate: using openai models
 '''
+
+
 ########################################################################################################
 def custom_api(prompt, model, temperature=0.0, top_p=1.0, max_tokens=512):
-
     raise NotImplementedError()
 
-def generate(prompt, model, temperature=0.0, top_p=1.0, max_tokens=512, port=None, i=0):
 
+def generate(prompt, model, temperature=0.0, top_p=1.0, max_tokens=512, port=None, i=0):
     # TODO: You need to use your own inference method
     # return custom_api(prompt, model, temperature, top_p, max_tokens, port)
     return call_vllm_api(prompt, model, temperature, top_p, max_tokens, port, i)
 
-CUSTOM_SERVER = "0.0.0.0" # you may need to change the port
 
-model_map = {   'meta-llama/Llama-3.1-405B-Instruct-FP8': {'name': 'llama3.1_405B',
-                                                            'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"]},
-                'meta-llama/Llama-3.3-70B-Instruct': {'name': 'llama3.3_70B',
-                                                    'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"]},
-                'meta-llama/Llama-3.1-70B-Instruct': {'name': 'llama3.1_70B',
-                                                        'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
+CUSTOM_SERVER = "0.0.0.0"  # you may need to change the port
+
+model_map = {'meta-llama/Llama-3.1-405B-Instruct-FP8': {'name': 'llama3.1_405B',
+                                                        'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"]},
+             'meta-llama/Llama-3.3-70B-Instruct': {'name': 'llama3.3_70B',
+                                                   'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"]},
+             'meta-llama/Llama-3.1-70B-Instruct': {'name': 'llama3.1_70B',
+                                                   'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
+                                                   },
+             'meta-llama/Llama-3.1-8B-Instruct': {'name': 'llama3.1_8B',
+                                                  'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
+                                                  },
+             'mistralai/Mistral-7B-Instruct-v0.2': {'name': 'mistral7B',
+                                                    'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
                                                     },
-                'meta-llama/Llama-3.1-8B-Instruct': {'name': 'llama3.1_8B',
-                                                        'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
-                                                    },
-                'mistralai/Mistral-7B-Instruct-v0.2': {'name': 'mistral7B',
-                                                        'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
-                                                    },
-                "mistralai/Mistral-Nemo-Instruct-2407": {'name': 'Mistral-Nemo-Instruct-2407',
-                                                        'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
-                                                    },
-                                                    
-            }
+             "mistralai/Mistral-Nemo-Instruct-2407": {'name': 'Mistral-Nemo-Instruct-2407',
+                                                      'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
+                                                      },
+             "wulli/Qwen2.5-0.5B-sft-capybara": {'name': 'wulli/Qwen2.5-0.5B-sft-capybara',
+                                                 'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
+                                                 },
+             "Qwen/Qwen3-0.6B": {'name': ' Qwen/Qwen3-0.6B',
+                                 'server_urls': [f"http://{CUSTOM_SERVER}:8000/v1"],
+                                 },
+
+             }
+
+
 ########################################################################################################
 
-def call_vllm_api(prompt, model, temperature=0.0, top_p=1.0, max_tokens=512, port=None, i=0):
+def call_vllm_api(prompt, model, temperature=0.0, top_p=1.0, max_tokens=2048, port=None, i=0):
     if port == None:
         port = model_map[model]["server_urls"][i]
 
@@ -57,7 +67,7 @@ def call_vllm_api(prompt, model, temperature=0.0, top_p=1.0, max_tokens=512, por
     )
     chat_completion = client.chat.completions.create(
         model=model,
-        messages=[{"role": "user","content": prompt}],
+        messages=[{"role": "user", "content": prompt}],
         max_tokens=max_tokens,
         temperature=temperature,
         top_p=top_p
@@ -65,7 +75,8 @@ def call_vllm_api(prompt, model, temperature=0.0, top_p=1.0, max_tokens=512, por
 
     return chat_completion.choices[0].message.content
 
-def openai_generate(prompt, model, temperature=0.0, top_p=1.0, max_tokens=512):
+
+def openai_generate(prompt, model, temperature=0.0, top_p=1.0, max_tokens=2048):
     # Create a client object
     client = openai.OpenAI(
         api_key=os.environ["OPENAI_KEY"],

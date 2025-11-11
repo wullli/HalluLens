@@ -117,8 +117,8 @@ class PreciseQAEval:
         self.output_path = f'output/{TASKNAME}/{self.model_name}'
         self.test_df = pd.read_json(generations_file_path, lines=True)
        
-        self.abtention_evaluator = 'meta-llama/Llama-3.1-70B-Instruct'
-        self.halu_evaluator = 'meta-llama/Llama-3.1-70B-Instruct'
+        self.abtention_evaluator = 'gpt-4o-mini'
+        self.halu_evaluator = 'gpt-4o-mini'
 
     def eval_abstention(self, evaluator):
         print("Start abstantion evaluation")
@@ -167,7 +167,7 @@ class PreciseQAEval:
             ) for _, g in self.test_df.iterrows()
         ]
 
-        if evaluator == "meta-llama/Llama-3.1-70B-Instruct":
+        if evaluator == "gpt-4o-mini":
             halu_eval_raw = thread_map(
                 lambda p: lm.generate(p, evaluator),
                 halu_prompts,
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type=str, default='dynamic', help='static / dynamic')
     
     parser.add_argument('--model', type=str, default='meta-llama/Meta-Llama-3.1-70B-Instruct', help='model to use for generation')
-    parser.add_argument('--inference_method', type=str, default='vllm', help='check and customize util/lm.py')
+    parser.add_argument('--inference_method', type=str, default='openai', help='check and customize util/lm.py')
     parser.add_argument('--max_inference_tokens',  type=int, default=256)
     parser.add_argument('--inf_batch_size', type=int, default=64)
     
@@ -281,7 +281,7 @@ if __name__ == '__main__':
                 QAs = precise_qa.precise_QA_generation_run_batch(
                     wiki_input_path=f"{base_path}/data/wiki_data/doc_goodwiki_h_score.jsonl",
                     N=args.N,
-                    q_generator="meta-llama/Llama-3.1-70B-Instruct",
+                    q_generator=args.model,
                     output_path=QA_OUTPUT_PATH)
                 print(f"Generated {len(QAs)} QA pairs")
 
